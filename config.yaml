@@ -1,0 +1,61 @@
+data:
+  root: "ddh_visgrid_classification_challenge"
+  train_dir: "train"
+  val_dir:   "val"
+  max_frames: 32          # frames per object per camera
+  max_traj_len: 128       # trajectory timesteps
+  num_workers: 4
+
+classes:
+  names: ["BIRD", "DRONE", "IRRELEVANT"]
+  weights: [1.0, 2.5, 1.5]   # higher weight for DRONE (missing drone is costly)
+
+image_model:
+  backbone: "mobilenet_v3_small"   # or efficientnet_b0, convnext_tiny
+  pretrained: true
+  embed_dim: 256
+  temporal: "transformer"          # or bilstm
+  num_temporal_layers: 2
+  dropout: 0.3
+  img_size: 32
+
+trajectory_model:
+  embed_dim: 128
+  num_heads: 4
+  num_layers: 3
+  dropout: 0.2
+  max_traj_len: 128
+
+fusion:
+  hidden_dim: 512
+  dropout: 0.3
+  use_image: true
+  use_traj_2d: true
+  use_traj_3d: true
+
+training:
+  batch_size: 32
+  epochs: 50
+  lr: 3e-4
+  weight_decay: 1e-4
+  scheduler: "cosine"
+  warmup_epochs: 5
+  loss: "focal"           # focal or weighted_ce
+  focal_gamma: 2.0
+  grad_clip: 1.0
+  seed: 42
+
+lgbm:
+  n_estimators: 1000
+  learning_rate: 0.05
+  num_leaves: 63
+  max_depth: -1
+  min_child_samples: 10
+  subsample: 0.8
+  colsample_bytree: 0.8
+  class_weight: "balanced"
+  early_stopping_rounds: 50
+
+paths:
+  checkpoints: "checkpoints"
+  outputs: "outputs"
